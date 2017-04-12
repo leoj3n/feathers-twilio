@@ -1,5 +1,7 @@
 # feathers-twilio
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/feathersjs/feathers-twilio.svg?token=6347a0dcd7ddd1bcba913cc2d38f88dadf2de12859bb2f2db43f3a604454f05d)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/feathersjs/feathers-twilio.png?branch=master)](https://travis-ci.org/feathersjs/feathers-twilio)
 [![Code Climate](https://codeclimate.com/github/feathersjs/feathers-twilio.png)](https://codeclimate.com/github/feathersjs/feathers-twilio)
 [![Test Coverage](https://codeclimate.com/github/feathersjs/feathers-twilio/badges/coverage.svg)](https://codeclimate.com/github/feathersjs/feathers-twilio/coverage)
