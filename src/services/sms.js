@@ -1,5 +1,6 @@
-import errors from 'feathers-errors';
-import twilio from 'twilio';
+import Twilio from 'twilio';
+import errors from '@feathersjs/errors';
+import { filterQuery } from '@feathersjs/commons';
 
 class Service {
   constructor (options = {}) {
@@ -13,14 +14,60 @@ class Service {
 
     this.from = options.from || null;
     this.paginate = options.paginate || {};
-    this.twilio = twilio(options.accountSid, options.authToken);
+    
+    this.client = new Twilio(options.accountSid, options.authToken);
   }
 
   find (params) {
-    params = params || {};
-    // TODO (EK): Do something with params and pagination
+    const paginate = (params && typeof params.paginate !== 'undefined') ? params.paginate : this.paginate;
+    const result = this._find(params, !!paginate.default,
+      query => filterQuery(query, paginate)
+    );
+
+    return result;
+  }
+
+  _find (params, count, getFilter = filterQuery) {
+    const { filters, query } = getFilter(params.query || {});
+
+    let opts = {};
+
+    // Handle $limit
+    if (filters.$limit === 0) {
+      opts = {
+        category: 'sms',
+      };
+
+      return new Promise((resolve, reject) => {
+        this.client.usage.records.list(opts).then((records) => {
+          // note this api call probably won't ever return more than one record
+          const total = records.reduce((a, r) => +a + +r.count, 0);
+          resolve({
+            total,
+            limit: filters.$limit,
+            data: [],
+          });
+        }).catch(reject);
+      });
+    }
+    
+    if (typeof filters.$limit !== 'undefined') {
+      opts = {
+        limit: filters.$limit,
+      }; 
+    }
+
     return new Promise((resolve, reject) => {
-      return this.twilio.messages.get().then(resolve).catch(reject);
+      // allow non-standard filters
+      opts = Object.assign({}, opts, query);
+      this.client.messages.list(opts).then((messages) => {
+        const total = messages.length;
+        resolve({
+          total,
+          limit: filters.$limit,
+          data: messages,
+        });
+      }).catch(reject);
     });
   }
 
@@ -30,7 +77,7 @@ class Service {
         return reject(new errors.BadRequest('`id` needs to be provided'));
       }
 
-      return this.twilio.messages(id).get().then(resolve).catch(reject);
+      return this.client.messages(id).get().then(resolve).catch(reject);
     });
   }
 
@@ -50,7 +97,7 @@ class Service {
         return reject(new errors.BadRequest('`body` or `mediaUrl` must be specified'));
       }
 
-      return this.twilio.messages.create(data).then(resolve).catch(reject);
+      return this.client.messages.create(data).then(resolve).catch(reject);
     });
   }
 }

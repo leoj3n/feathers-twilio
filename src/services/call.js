@@ -1,4 +1,4 @@
-import errors from 'feathers-errors';
+import errors from '@feathersjs/errors';
 import twilio from 'twilio';
 
 class Service {

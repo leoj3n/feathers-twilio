@@ -11,6 +11,8 @@
 
 ## Still a WIP
 
+This is a Twilio convenience library that does not follow Feathers Common API.
+
 ## Installation
 
 ```bash
